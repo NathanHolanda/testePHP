@@ -35,8 +35,8 @@ services:
     environment:
       MYSQL_DATABASE: teste_alphacode_db
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_PASSWORD: admin
-      MYSQL_USER: 123456
+      MYSQL_PASSWORD: 123456
+      MYSQL_USER: admin
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
