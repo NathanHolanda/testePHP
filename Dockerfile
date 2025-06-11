@@ -1,9 +1,7 @@
 FROM php:8.2-fpm
 
-# Set working directory
 WORKDIR /var/www
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -14,29 +12,20 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev
 
-# Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Create system user to run Composer and Artisan Commands
+COPY . /var/www/
+
 RUN useradd -G www-data,root -u 1000 -d /home/laravel laravel
-RUN mkdir -p /home/laravel/.composer && \
-    chown -R laravel:laravel /home/laravel
+RUN mkdir -p /home/laravel/.composer
+RUN chown -R laravel:laravel /var/www /home/laravel
+RUN chmod -R 755 /var/www/storage /var/www/bootstrap/cache
 
-# Copy existing application directory contents
-COPY ./src /var/www
-
-# Copy existing application directory permissions
-COPY --chown=laravel:laravel ./src /var/www
-
-# Change current user to laravel
 USER laravel
 
-# Expose port 9000 and start php-fpm server
 EXPOSE 9000
 CMD ["php-fpm"]
