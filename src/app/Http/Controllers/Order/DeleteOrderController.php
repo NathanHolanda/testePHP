@@ -18,7 +18,7 @@ class DeleteOrderController extends Controller
     public function delete(Request $request, string $id)
     {
         try {
-            $this->order->deleteData($id);
+            $this->order->remove($id);
             return response()->json(['message' => 'Pedido deletado com sucesso.'], Response::HTTP_OK);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao deletar pedido: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);

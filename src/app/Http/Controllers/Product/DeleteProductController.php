@@ -18,7 +18,7 @@ class DeleteProductController extends Controller
     public function delete(Request $request, string $id)
     {
         try {
-            $this->product->deleteData($id);
+            $this->product->remove($id);
             return response()->json(['message' => 'Produto deletado com sucesso.'], Response::HTTP_OK);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao deletar produto: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
