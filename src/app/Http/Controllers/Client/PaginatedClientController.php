@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 
 class PaginatedClientController extends Controller
@@ -26,9 +27,9 @@ class PaginatedClientController extends Controller
         try {
             $clients = $this->client->getPaginatedSortedAndFiltered($offset, $limit, $sortByColumn, $sortByType, $filterByValue);
 
-            return response()->json($clients, 200);
+            return response()->json($clients, Response::HTTP_OK);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro ao buscar clientes: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao buscar clientes: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

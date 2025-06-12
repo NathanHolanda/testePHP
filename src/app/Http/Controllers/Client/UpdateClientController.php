@@ -21,13 +21,11 @@ class UpdateClientController extends Controller
 
         try{
             $request->validate([
-                // 'id' => 'required|integer|exists:clients,id',
                 'name' => 'string|max:40',
                 'surname' => 'string|max:60',
                 'email' => ['nullable','email','max:30',Rule::unique('clients', 'email')->ignore($id)],
                 'cpf' => ['nullable','string','max:11',Rule::unique('clients', 'cpf')->ignore($id), 'regex:/^\d{11}$/'],
             ], [
-                // 'id.required' => 'ID obrigatório.',
                 'name.max' => 'Nome muito longo.',
                 'surname.max' => 'Sobrenome muito longo.',
                 'email.email' => 'E-mail inválido.',

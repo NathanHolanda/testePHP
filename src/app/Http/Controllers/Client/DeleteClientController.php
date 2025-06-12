@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Models\Client;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 
 class DeleteClientController extends Controller
@@ -18,9 +19,9 @@ class DeleteClientController extends Controller
     {
         try {
             $this->client->deleteData($id);
-            return response()->json(['message' => 'Cliente deletado com sucesso.'], 200);
+            return response()->json(['message' => 'Cliente deletado com sucesso.'], Response::HTTP_OK);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro ao deletar cliente: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao deletar cliente: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
