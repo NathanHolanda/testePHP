@@ -13,6 +13,11 @@ class Client extends Model
         'cpf',
     ];
 
+    public function getById(int $id)
+    {
+        return $this->find($id);
+    }
+
     public function create(array $data)
     {
         $this->fill($data)->save();
@@ -34,37 +39,29 @@ class Client extends Model
     public function getPaginatedSortedAndFiltered(int $offset=0, int $limit=20, string $sortByColumn='id', string $sortByType='ASC', string $filterByValue='')
     {
         if(strlen($filterByValue) > 0){
-            if(strtoupper($sortByType) === 'ASC')
-                return $this->select('*')
-                    ->where('name', 'like', "%{$filterByValue}%")
-                    ->orWhere('surname', 'like', "%{$filterByValue}%")
-                    ->orWhere('email', 'like', "%{$filterByValue}%")
-                    ->orWhere('cpf', 'like', "%{$filterByValue}%")
-                    ->orderBy($sortByColumn)
-                    ->offset($offset)
-                    ->limit($limit)
-                    ->get();
-            else
-                return $this
-                    ->where('name', 'like', "%{$filterByValue}%")
-                    ->orWhere('surname', 'like', "%{$filterByValue}%")
-                    ->orWhere('email', 'like', "%{$filterByValue}%")
-                    ->orWhere('cpf', 'like', "%{$filterByValue}%")
-                    ->orderByDesc($sortByColumn)
-                    ->offset($offset)
-                    ->limit($limit)
-                    ->get();
+            $cpfFilter = preg_replace('/\D/', '', $filterByValue);
 
-        }else{
+            $collection = $this
+                    ->where('name', 'like', "%{$filterByValue}%")
+                    ->orWhere('surname', 'like', "%{$filterByValue}%")
+                    ->orWhere('email', 'like', "%{$filterByValue}%");
+
+            if(strlen($cpfFilter) > 0)
+                $collection = $collection
+                    ->orWhere('cpf', 'like', "%".$cpfFilter."%");
+
             if(strtoupper($sortByType) === 'ASC')
-                return $this->select('*')
-                    ->orderBy($sortByColumn)
-                    ->offset($offset)
+                $collection = $collection->orderBy($sortByColumn);
+            else
+                $collection = $collection->orderByDesc($sortByColumn);
+
+            return $collection->offset($offset)
                     ->limit($limit)
                     ->get();
-            else
-                return $this
-                    ->orderByDesc($sortByColumn)
+        }else{
+            $collection = strtoupper($sortByType) === 'ASC' ? $this->orderBy($sortByColumn) : $this->orderByDesc($sortByColumn);
+
+            return $collection
                     ->offset($offset)
                     ->limit($limit)
                     ->get();
