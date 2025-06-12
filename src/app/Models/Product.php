@@ -6,12 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    protected $fillable = [
-        'name',
-        'price',
-        'barcode',
-    ];
-
     public function getById(int $id)
     {
         return $this->find($id);
@@ -29,7 +23,7 @@ class Product extends Model
         return;
     }
 
-    public function deleteData(int $id)
+    public function remove(int $id)
     {
         $this->where("id", $id)->delete();
         return;

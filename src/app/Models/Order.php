@@ -8,14 +8,6 @@ use App\Models\Product;
 
 class Order extends Model
 {
-    protected $fillable = [
-        'client_id',
-        'product_id',
-        'quantity',
-        'status',
-        'order_date',
-    ];
-
     public function create(array $data)
     {
         $this->fill($data)->save();
@@ -28,7 +20,7 @@ class Order extends Model
         return;
     }
 
-    public function deleteData(int $id)
+    public function remove(int $id)
     {
         $this->where("id", $id)->delete();
         return;

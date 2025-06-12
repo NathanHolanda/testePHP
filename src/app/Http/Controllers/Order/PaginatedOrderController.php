@@ -15,7 +15,7 @@ class PaginatedOrderController extends Controller
         $this->order = new Order();
     }
 
-    public function getPaginatedOrders(Request $request)
+    public function getPaginated(Request $request)
     {
         $offset = $request->input('offset', 0);
         $limit = $request->input('limit', 20);

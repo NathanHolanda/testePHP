@@ -6,13 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Client extends Model
 {
-    protected $fillable = [
-        'name',
-        'surname',
-        'email',
-        'cpf',
-    ];
-
     public function getById(int $id)
     {
         return $this->find($id);
@@ -30,7 +23,7 @@ class Client extends Model
         return;
     }
 
-    public function deleteData(int $id)
+    public function remove(int $id)
     {
         $this->where("id", $id)->delete();
         return;

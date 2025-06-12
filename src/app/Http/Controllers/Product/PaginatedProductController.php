@@ -15,7 +15,7 @@ class PaginatedProductController extends Controller
         $this->product = new Product();
     }
 
-    public function getPaginatedProducts(Request $request)
+    public function getPaginated(Request $request)
     {
         $offset = $request->input('offset', 0);
         $limit = $request->input('limit', 20);

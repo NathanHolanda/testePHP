@@ -21,19 +21,19 @@ Route::prefix('clients')->name("clients.")->group(function () {
     Route::post('/', [CreateClientController::class, 'create'])->name('create');
     Route::put('/{id}', [UpdateClientController::class, 'update'])->name('update');
     Route::delete('/{id}', [DeleteClientController::class, 'delete'])->name('delete');
-    Route::get('/', [PaginatedClientController::class, 'getPaginatedClients'])->name('paginated');
+    Route::get('/', [PaginatedClientController::class, 'getPaginated'])->name('paginated');
 });
 
 Route::prefix('products')->name("products.")->group(function (){
     Route::post('/', [CreateProductController::class, 'create'])->name('create');
     Route::put('/{id}', [UpdateProductController::class, 'update'])->name('update');
     Route::delete('/{id}', [DeleteProductController::class, 'delete'])->name('delete');
-    Route::get('/', [PaginatedProductController::class, 'getPaginatedProducts'])->name('paginated');
+    Route::get('/', [PaginatedProductController::class, 'getPaginated'])->name('paginated');
 });
 
 Route::prefix('orders')->name("orders.")->group(function (){
     Route::post('/', [CreateOrderController::class, 'create'])->name('create');
     Route::put('/{id}', [UpdateOrderController::class, 'update'])->name('update');
     Route::delete('/{id}', [DeleteOrderController::class, 'delete'])->name('delete');
-    Route::get('/', [PaginatedOrderController::class, 'getPaginatedOrders'])->name('paginated');
+    Route::get('/', [PaginatedOrderController::class, 'getPaginated'])->name('paginated');
 });

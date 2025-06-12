@@ -15,7 +15,7 @@ class PaginatedClientController extends Controller
         $this->client = new Client();
     }
 
-    public function getPaginatedClients(Request $request)
+    public function getPaginated(Request $request)
     {
         $offset = $request->input('offset', 0);
         $limit = $request->input('limit', 20);
