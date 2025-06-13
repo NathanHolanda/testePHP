@@ -18,10 +18,11 @@ return new class extends Migration
             $table->integer('quantity');
             $table->enum('status', ['pending', 'payed', 'cancelled'])->default('pending');
             $table->dateTime('order_date')->useCurrent();
+            $table->decimal('discount', 3, 2)->nullable();
             $table->timestamps();
 
-            $table->foreign('client_id')->references('id')->on('clients');
-            $table->foreign('product_id')->references('id')->on('products');
+            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
     }
 
