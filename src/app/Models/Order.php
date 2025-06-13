@@ -56,19 +56,31 @@ class Order extends Model
             else
                 $collection = $collection->orderByDesc("orders.".$sortByColumn);
 
-            return $collection
-                ->offset($offset)
-                ->limit($limit)
-                ->get();
+            $count = $collection->count();
+            $data = [
+                "total" => $count,
+                "items" => $collection
+                    ->offset($offset)
+                    ->limit($limit)
+                    ->get()
+            ];
+
+            return $data;
         }else{
             $collection = strtoupper($sortByType) === 'ASC' ? $this->orderBy("orders.".$sortByColumn) : $this->orderByDesc("orders.".$sortByColumn);
 
-            $collection = $collection->join('products', 'products.id', '=', 'orders.product_id')->join('clients', 'clients.id', '=', 'orders.client_id')->select('orders.*', 'products.name as product_name', 'clients.name as client_name', 'clients.surname as client_surname');
+            $collection = $collection->join('products', 'products.id', '=', 'orders.product_id')->join('clients', 'clients.id', '=', 'orders.client_id')->select('orders.*', 'products.name as product_name', 'products.price as product_price', 'clients.name as client_name', 'clients.surname as client_surname');
 
-            return $collection
+            $count = $collection->count();
+            $data = [
+                "total" => $count,
+                "items" => $collection
                     ->offset($offset)
                     ->limit($limit)
-                    ->get();
+                    ->get()
+            ];
+
+            return $data;
         }
     }
 

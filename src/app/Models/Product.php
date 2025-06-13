@@ -42,17 +42,29 @@ class Product extends Model
             else
                 $collection = $collection->orderByDesc($sortByColumn);
 
-            return $collection
+            $count = $collection->count();
+            $data = [
+                "total" => $count,
+                "items" => $collection
                     ->offset($offset)
                     ->limit($limit)
-                    ->get();
+                    ->get()
+            ];
+
+            return $data;
         }else{
             $collection = strtoupper($sortByType) === 'ASC' ? $this->orderBy($sortByColumn) : $this->orderByDesc($sortByColumn);
 
-            return $collection
+            $count = $collection->count();
+            $data = [
+                "total" => $count,
+                "items" => $collection
                     ->offset($offset)
                     ->limit($limit)
-                    ->get();
+                    ->get()
+            ];
+
+            return $data;
         }
     }
 
