@@ -35,14 +35,14 @@ class Order extends Model
             $clientResultFromQuery = $client->getByName($filterByValue);
             $productResultFromQuery = $product->getByName($filterByValue);
 
-            $client_id = !empty($clientResultFromQuery) ? $clientResultFromQuery->id : null;
-            $product_id = !empty($productResultFromQuery) ? $productResultFromQuery->id : null;
+            $clientId = !empty($clientResultFromQuery) ? $clientResultFromQuery->id : null;
+            $productId = !empty($productResultFromQuery) ? $productResultFromQuery->id : null;
 
             $collection = $this->where('quantity', '=', $filterByValue);
-            if($client_id)
-                $collection = $collection->orWhere('client_id', '=', $client_id);
-            if($product_id)
-                $collection = $collection->orWhere('product_id', '=', $product_id);
+            if($clientId)
+                $collection = $collection->orWhere('client_id', '=', $clientId);
+            if($productId)
+                $collection = $collection->orWhere('product_id', '=', $productId);
 
             if(strlen($filterByStatus) > 0)
                 $collection = $collection->where('status', $filterByStatus);
