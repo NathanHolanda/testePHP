@@ -29,9 +29,14 @@ class Order extends Model
     public function getPaginatedSortedAndFiltered(int $offset=0, int $limit=20, string $sortByColumn='id', string $sortByType='ASC', string $filterByValue='', string $filterByDate='', string $filterByStatus='')
     {
         if(strlen($filterByValue) > 0 || strlen($filterByDate) > 0 || strlen($filterByStatus) > 0){
-            $client_id = Client::where('name', 'like', "%{$filterByValue}%")->first()?->id ?? Client::Where('surname', 'like', "%{$filterByValue}%")?->id;
-            $product_id = Product::where('name', 'like', "%{$filterByValue}%")
-            ->first()?->id;
+            $client = new Client();
+            $product = new Product();
+
+            $clientResultFromQuery = $client->getByName($filterByValue);
+            $productResultFromQuery = $product->getByName($filterByValue);
+
+            $client_id = !empty($clientResultFromQuery) ? $clientResultFromQuery->id : null;
+            $product_id = !empty($productResultFromQuery) ? $productResultFromQuery->id : null;
 
             $collection = $this->where('quantity', '=', $filterByValue);
             if($client_id)
@@ -44,18 +49,21 @@ class Order extends Model
             if(strlen($filterByDate) > 0)
                 $collection = $collection->where('order_date', '=', $filterByDate);
 
+            $collection = $collection->join('products', 'products.id', '=', 'orders.product_id')->join('clients', 'clients.id', '=', 'orders.client_id')->select('orders.*', 'products.name as product_name', 'clients.name as client_name', 'clients.surname as client_surname');
 
             if(strtoupper($sortByType) === 'ASC')
-                $collection = $collection->orderBy($sortByColumn);
+                $collection = $collection->orderBy("orders.".$sortByColumn);
             else
-                $collection = $collection->orderByDesc($sortByColumn);
+                $collection = $collection->orderByDesc("orders.".$sortByColumn);
 
             return $collection
                 ->offset($offset)
                 ->limit($limit)
                 ->get();
         }else{
-            $collection = strtoupper($sortByType) === 'ASC' ? $this->orderBy($sortByColumn) : $this->orderByDesc($sortByColumn);
+            $collection = strtoupper($sortByType) === 'ASC' ? $this->orderBy("orders.".$sortByColumn) : $this->orderByDesc("orders.".$sortByColumn);
+
+            $collection = $collection->join('products', 'products.id', '=', 'orders.product_id')->join('clients', 'clients.id', '=', 'orders.client_id')->select('orders.*', 'products.name as product_name', 'clients.name as client_name', 'clients.surname as client_surname');
 
             return $collection
                     ->offset($offset)
@@ -63,4 +71,14 @@ class Order extends Model
                     ->get();
         }
     }
+
+    public function removeMany(array $ids)
+    {
+        if(count($ids) > 0){
+            $this->whereIn("id", $ids)->delete();
+            return;
+        }
+        return;
+    }
 }
+

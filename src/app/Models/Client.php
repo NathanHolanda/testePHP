@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Client extends Model
 {
-    public function getById(int $id)
+    public function getByName(string $name)
     {
-        return $this->find($id);
+        return $this->where('name', 'like', "%{$name}%")->orWhere('surname', 'like', "%{$name}%")->first();
     }
 
     public function create(array $data)
@@ -59,5 +59,13 @@ class Client extends Model
                     ->limit($limit)
                     ->get();
         }
+    }
+
+    public function removeMany(array $ids)
+    {
+        if(count($ids) > 0)
+            $this->whereIn("id", $ids)->delete();
+
+        return;
     }
 }
