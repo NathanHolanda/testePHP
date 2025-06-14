@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('client_id');
             $table->unsignedBigInteger('product_id');
             $table->integer('quantity');
-            $table->enum('status', ['pending', 'payed', 'cancelled'])->default('pending');
+            $table->enum('status', ['pending', 'payed', 'canceled'])->default('pending');
             $table->dateTime('order_date')->useCurrent();
             $table->decimal('discount', 3, 2)->nullable();
             $table->timestamps();
