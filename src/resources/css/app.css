@@ -14,3 +14,7 @@
 a {
     cursor: pointer;
 }
+
+#remove-selected-btn[disabled] {
+    opacity: 0;
+}
