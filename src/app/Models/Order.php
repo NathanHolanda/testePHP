@@ -32,25 +32,26 @@ class Order extends Model
             $client = new Client();
             $product = new Product();
 
-            $clientResultFromQuery = $client->getByName($filterByValue);
-            $productResultFromQuery = $product->getByName($filterByValue);
+            $clientResultFromQuery = !empty($filterByValue) ? $client->getByName((string) $filterByValue) : null;
+            $productResultFromQuery = !empty($filterByValue) ? $product->getByName((string) $filterByValue) : null;
 
             $clientId = !empty($clientResultFromQuery) ? $clientResultFromQuery->id : null;
             $productId = !empty($productResultFromQuery) ? $productResultFromQuery->id : null;
 
-            $collection = $this->where('quantity', '=', $filterByValue);
+            $raw = "";
+            if(strlen($filterByStatus) > 0 && strlen($filterByDate) > 0) $raw = "`status` = '$filterByStatus' and `order_date` = '$filterByDate'";
+            else if(strlen($filterByStatus) > 0) $raw = "`status` = '$filterByStatus'";
+            else if(strlen($filterByDate) > 0) $raw = "`order_date` = '$filterByDate'";
+
+
+            $collection = strlen($raw) > 0 ? $this->whereRaw($raw)->where('quantity', !empty($filterByValue) ? '=' : "!=", $filterByValue) : $this->where('quantity', !empty($filterByValue) ? '=' : "!=", $filterByValue);
+
             if($clientId)
                 $collection = $collection->orWhere('client_id', '=', $clientId);
             if($productId)
                 $collection = $collection->orWhere('product_id', '=', $productId);
 
-            if(strlen($filterByStatus) > 0)
-                $collection = $collection->where('status', $filterByStatus);
-            if(strlen($filterByDate) > 0)
-                $collection = $collection->where('order_date', '=', $filterByDate);
-
             $collection = $collection->join('products', 'products.id', '=', 'orders.product_id')->join('clients', 'clients.id', '=', 'orders.client_id')->select('orders.*', 'products.name as product_name', 'products.price as product_price', 'clients.name as client_name', 'clients.surname as client_surname');
-
 
             if($sortByColumn === 'total'){
                 $collection = $collection->orderByRaw('products.price * orders.quantity * (1 - COALESCE(orders.discount, 0)) '.strtoupper($sortByType));
