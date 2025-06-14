@@ -23,32 +23,47 @@ const queryParams = {
     filterByStatus: "",
 };
 
+let selectedItems = [];
+
 window.onload = () => {
     getItems();
-    handleDisableCurrentNavItem();
-};
 
-Array.from(document.getElementsByClassName("btn-teste")).forEach((button) => {
-    button.addEventListener("click", () => {
-        console.log("Button clicked:", button.value);
-        fetch("http://localhost:8080/api/clients?offset=" + button.value)
-            .then(async (response) => {
-                const data = await response.json();
-                console.log(data);
-                teste.innerHTML = data
-                    .map((client) => {
-                        return `<div class="client">
-                                    <h3>${client.name}</h3>
-                                    <p>${client.email}</p>
-                                </div>`;
+    handleItemsPerPageChange();
+
+    document
+        .getElementById("remove-selected-btn")
+        .addEventListener("click", (e) => {
+            const response = confirm(
+                "Deseja confirmar a exclusão dos itens selecionados?"
+            );
+
+            if (response) {
+                console.log(
+                    JSON.stringify({
+                        ids: selectedItems.map((id) => +id),
                     })
-                    .join("");
-            })
-            .catch((error) => {
-                console.error("There was an error!", error);
-            });
-    });
-});
+                );
+                fetch(rootApiUrl + "bulk/" + endpoint, {
+                    method: "DELETE",
+                    body: JSON.stringify({
+                        ids: selectedItems.map((id) => +id),
+                    }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }).then(() => {
+                    alert("Itens excluídos com sucesso!");
+
+                    selectedItems = [];
+                    document.getElementById(
+                        "remove-selected-btn"
+                    ).disabled = true;
+
+                    getItems();
+                });
+            }
+        });
+};
 
 function getItems() {
     const { limit, offset } = queryParams;
@@ -80,6 +95,7 @@ function createTableRows(items) {
     if (endpoint === "clients") {
         theadElement.innerHTML = `
                     <tr>
+                        <th></th>
                         <th>Nome</th>
                         <th>Sobrenome</th>
                         <th>Email</th>
@@ -89,6 +105,9 @@ function createTableRows(items) {
         items.forEach((item) => {
             const row = tbodyElement.insertRow();
             row.innerHTML = `
+                        <td><input class="form-check-input" type="checkbox" value=${
+                            item.id
+                        }></td>
                         <td>${item.name}</td>
                         <td>${item.surname}</td>
                         <td>${item.email ?? "Não cadastrado"}</td>
@@ -101,6 +120,7 @@ function createTableRows(items) {
     } else if (endpoint === "products") {
         theadElement.innerHTML = `
                     <tr>
+                        <th></th>
                         <th>Nome</th>
                         <th>Preço</th>
                         <th>Código de barras</th>
@@ -109,6 +129,9 @@ function createTableRows(items) {
         items.forEach((item) => {
             const row = tbodyElement.insertRow();
             row.innerHTML = `
+                        <td><input class="form-check-input" type="checkbox" value=${
+                            item.id
+                        }></td>
                         <td>${item.name}</td>
                         <td>${Intl.NumberFormat("pt-BR", {
                             style: "currency",
@@ -120,6 +143,7 @@ function createTableRows(items) {
     } else if (endpoint === "orders") {
         theadElement.innerHTML = `
                     <tr>
+                        <th></th>
                         <th>Nº</th>
                         <th>Cliente</th>
                         <th>Produto</th>
@@ -144,6 +168,9 @@ function createTableRows(items) {
 
             const row = tbodyElement.insertRow();
             row.innerHTML = `
+                        <td><input class="form-check-input" type="checkbox" value=${
+                            item.id
+                        }></td>
                         <td>#${item.id}</td>
                         <td>${item.client_name + " " + item.client_surname}</td>
                         <td>${item.product_name}</td>
@@ -156,6 +183,25 @@ function createTableRows(items) {
                     `;
         });
     }
+
+    Array.from(tbodyElement.getElementsByTagName("input")).forEach((input) => {
+        input.addEventListener("click", () => {
+            const { value, checked } = input;
+
+            if (checked) selectedItems.push(value);
+            else
+                selectedItems = [
+                    ...selectedItems.filter((item) => item != value),
+                ];
+
+            document.getElementById("remove-selected-btn").disabled =
+                !selectedItems.length;
+        });
+
+        const { value } = input;
+
+        if (selectedItems.includes(value) && !input.checked) input.click();
+    });
 }
 
 function createPagination(total, currentPage = 0) {
@@ -233,19 +279,21 @@ function createPrevAndNextButtons(totalPages, currentPage) {
     paginationElement.appendChild(nextItem);
 }
 
-function handleDisableCurrentNavItem() {
-    const clientsBtnElement = document.getElementById("clients-btn");
-    const productsBtnElement = document.getElementById("products-btn");
-    const ordersBtnElement = document.getElementById("orders-btn");
+function handleItemsPerPageChange() {
+    document.getElementById("limit-switch").addEventListener("change", (e) => {
+        resetQueryParams();
+        queryParams.limit = +e.target.value;
 
-    switch (endpoint) {
-        case "clients":
-            clientsBtnElement.disabled = true;
-            break;
-        case "products":
-            productsBtnElement.disabled = true;
-            break;
-        case "orders":
-            ordersBtnElement.disabled = true;
-    }
+        getItems();
+    });
+}
+
+function resetQueryParams() {
+    queryParams.offset = 0;
+    queryParams.limit = 20;
+    queryParams.sortByColumn = "id";
+    queryParams.sortByType = "ASC";
+    queryParams.filterByValue = "";
+    queryParams.filterByDate = "";
+    queryParams.filterByStatus = "";
 }

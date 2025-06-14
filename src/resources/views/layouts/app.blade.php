@@ -6,7 +6,7 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>Teste AlphaCode - CRUD Pedidos</title>
 
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
@@ -15,20 +15,22 @@
 </head>
 <body>
     <div id="app">
-        <nav>
-            <div class="m-2">
-                <button class="btn" id="clients-btn" onclick="window.location='{{ route("view.clients") }}'">Clientes</button>
-                <button class="btn" id="products-btn" onclick="window.location='{{ route("view.products") }}'">Produtos</button>
-                <button class="btn" id="orders-btn" onclick="window.location='{{ route("view.orders") }}'">Pedidos</button>
-            </div>
-        </nav>
-        <main class="py-4">
-            @yield('content')
-            <div class="mx-5 my-2">
-                <table id="table" class="table table-hover m-auto mb-2"><thead></thead><tbody></tbody></table>
-                <div class="w-100 d-flex justify-content-center">
-                    <nav aria-label="..."><ul class="pagination m-auto" id="pagination"></ul></nav>
+         @yield('content')
+        <main>
+            <div class="mx-5 my-2 overflow-hidden">
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-outline-danger mb-2" id="remove-selected-btn" disabled>Remover selecionados</button>
+                    <div class="mb-2 d-flex align-items-center justify-content-end gap-2 ml-auto">
+                        <label for="limit-switch">Items por página:</label>
+                        <select class="form-select form-select-sm" id="limit-switch" style="width: 70px">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
                 </div>
+                <x-table/>
             </div>
         </main>
     </div>
