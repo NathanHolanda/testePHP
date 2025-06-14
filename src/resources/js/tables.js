@@ -29,6 +29,7 @@ window.onload = () => {
     getItems();
 
     handleItemsPerPageChange();
+    handleFilter();
 
     document
         .getElementById("remove-selected-btn")
@@ -62,7 +63,6 @@ window.onload = () => {
 
 function getItems() {
     const { limit, offset } = queryParams;
-    console.log(queryParams);
 
     const queryParamsUrl = toQueryParams(queryParams);
 
@@ -268,6 +268,8 @@ function handleSort(column, sortType) {
     queryParams.sortByColumn = column;
     queryParams.sortByType = sortType;
 
+    queryParams.offset = 0;
+
     getItems();
 }
 
@@ -355,12 +357,34 @@ function handleItemsPerPageChange() {
     });
 }
 
-function resetQueryParams() {
-    queryParams.offset = 0;
-    queryParams.limit = 20;
-    queryParams.sortByColumn = "id";
-    queryParams.sortByType = "ASC";
-    queryParams.filterByValue = "";
-    queryParams.filterByDate = "";
-    queryParams.filterByStatus = "";
+function handleFilter() {
+    const filterForm = document.getElementById("filter-form");
+
+    filterForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        if (endpoint === "orders") {
+            queryParams.filterByDate =
+                document.getElementById("filter-by-date").value;
+            queryParams.filterByStatus =
+                document.getElementById("filter-by-status").value;
+        }
+
+        queryParams.filterByValue =
+            document.getElementById("filter-by-value").value;
+
+        queryParams.offset = 0;
+
+        getItems();
+    });
 }
+
+// function resetQueryParams() {
+//     queryParams.offset = 0;
+//     queryParams.limit = 20;
+//     queryParams.sortByColumn = "id";
+//     queryParams.sortByType = "ASC";
+//     queryParams.filterByValue = "";
+//     queryParams.filterByDate = "";
+//     queryParams.filterByStatus = "";
+// }

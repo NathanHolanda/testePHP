@@ -49,12 +49,13 @@ class Order extends Model
             if(strlen($filterByDate) > 0)
                 $collection = $collection->where('order_date', '=', $filterByDate);
 
-            $collection = $collection->join('products', 'products.id', '=', 'orders.product_id')->join('clients', 'clients.id', '=', 'orders.client_id')->select('orders.*', 'products.name as product_name', 'clients.name as client_name', 'clients.surname as client_surname');
+            $collection = $collection->join('products', 'products.id', '=', 'orders.product_id')->join('clients', 'clients.id', '=', 'orders.client_id')->select('orders.*', 'products.name as product_name', 'products.price as product_price', 'clients.name as client_name', 'clients.surname as client_surname');
 
 
-            if(str_starts_with($sortByColumn, "client_") || str_starts_with($sortByColumn, "product_")){
+            if($sortByColumn === 'total'){
+                $collection = $collection->orderByRaw('products.price * orders.quantity * (1 - COALESCE(orders.discount, 0)) '.strtoupper($sortByType));
+            }else if(str_starts_with($sortByColumn, "client_") || str_starts_with($sortByColumn, "product_")){
                 $arrAux = explode("_", $sortByColumn);
-                return $arrAux;
 
                 $tableName = $arrAux[0]."s";
                 $columnName = $arrAux[1];
@@ -86,7 +87,9 @@ class Order extends Model
                 ->join('clients', 'clients.id', '=', 'orders.client_id')
                 ->select('orders.*', 'products.name as product_name', 'products.price as product_price', 'clients.name as client_name', 'clients.surname as client_surname');
 
-            if(str_starts_with($sortByColumn, "client_") || str_starts_with($sortByColumn, "product_")){
+            if($sortByColumn === 'total'){
+                $collection = $collection->orderByRaw('products.price * orders.quantity * (1 - COALESCE(orders.discount, 0)) '.strtoupper($sortByType));
+            }else if(str_starts_with($sortByColumn, "client_") || str_starts_with($sortByColumn, "product_")){
                 $arrAux = explode("_", $sortByColumn);
 
                 $tableName = $arrAux[0]."s";
