@@ -51,10 +51,24 @@ class Order extends Model
 
             $collection = $collection->join('products', 'products.id', '=', 'orders.product_id')->join('clients', 'clients.id', '=', 'orders.client_id')->select('orders.*', 'products.name as product_name', 'clients.name as client_name', 'clients.surname as client_surname');
 
-            if(strtoupper($sortByType) === 'ASC')
-                $collection = $collection->orderBy("orders.".$sortByColumn);
-            else
-                $collection = $collection->orderByDesc("orders.".$sortByColumn);
+
+            if(str_starts_with($sortByColumn, "client_") || str_starts_with($sortByColumn, "product_")){
+                $arrAux = explode("_", $sortByColumn);
+                return $arrAux;
+
+                $tableName = $arrAux[0]."s";
+                $columnName = $arrAux[1];
+
+                if(strtoupper($sortByType) === 'ASC')
+                    $collection = $collection->orderBy("$tableName.$columnName");
+                else
+                    $collection = $collection->orderByDesc("$tableName.$columnName");
+            }else{
+                if(strtoupper($sortByType) === 'ASC')
+                    $collection = $collection->orderBy("orders.".$sortByColumn);
+                else
+                    $collection = $collection->orderByDesc("orders.".$sortByColumn);
+            }
 
             $count = $collection->count();
             $data = [
@@ -67,9 +81,23 @@ class Order extends Model
 
             return $data;
         }else{
-            $collection = strtoupper($sortByType) === 'ASC' ? $this->orderBy("orders.".$sortByColumn) : $this->orderByDesc("orders.".$sortByColumn);
+            $collection = $this
+                ->join('products', 'products.id', '=', 'orders.product_id')
+                ->join('clients', 'clients.id', '=', 'orders.client_id')
+                ->select('orders.*', 'products.name as product_name', 'products.price as product_price', 'clients.name as client_name', 'clients.surname as client_surname');
 
-            $collection = $collection->join('products', 'products.id', '=', 'orders.product_id')->join('clients', 'clients.id', '=', 'orders.client_id')->select('orders.*', 'products.name as product_name', 'products.price as product_price', 'clients.name as client_name', 'clients.surname as client_surname');
+            if(str_starts_with($sortByColumn, "client_") || str_starts_with($sortByColumn, "product_")){
+                $arrAux = explode("_", $sortByColumn);
+
+                $tableName = $arrAux[0]."s";
+                $columnName = $arrAux[1];
+
+                if(strtoupper($sortByType) === 'ASC')
+                    $collection = $collection->orderBy("$tableName.$columnName");
+                else
+                    $collection = $collection->orderByDesc("$tableName.$columnName");
+            }else
+                $collection = strtoupper($sortByType) === 'ASC' ? $collection->orderBy("orders.".$sortByColumn) : $collection->orderByDesc("orders.".$sortByColumn);
 
             $count = $collection->count();
             $data = [

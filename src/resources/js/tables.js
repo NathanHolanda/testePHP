@@ -38,11 +38,6 @@ window.onload = () => {
             );
 
             if (response) {
-                console.log(
-                    JSON.stringify({
-                        ids: selectedItems.map((id) => +id),
-                    })
-                );
                 fetch(rootApiUrl + "bulk/" + endpoint, {
                     method: "DELETE",
                     body: JSON.stringify({
@@ -67,6 +62,7 @@ window.onload = () => {
 
 function getItems() {
     const { limit, offset } = queryParams;
+    console.log(queryParams);
 
     const queryParamsUrl = toQueryParams(queryParams);
 
@@ -93,15 +89,16 @@ function createTableRows(items) {
     tbodyElement.innerHTML = "";
 
     if (endpoint === "clients") {
-        theadElement.innerHTML = `
-                    <tr>
-                        <th></th>
-                        <th>Nome</th>
-                        <th>Sobrenome</th>
-                        <th>Email</th>
-                        <th>CPF</th>
-                    </tr>
-                `;
+        theadElement.append(
+            createSortableHeader([
+                { text: "", sortable: false },
+                { text: "Nome", column: "name" },
+                { text: "Sobrenome", column: "surname" },
+                { text: "Email", column: "email" },
+                { text: "CPF", column: "cpf" },
+            ])
+        );
+
         items.forEach((item) => {
             const row = tbodyElement.insertRow();
             row.innerHTML = `
@@ -118,14 +115,15 @@ function createTableRows(items) {
                     `;
         });
     } else if (endpoint === "products") {
-        theadElement.innerHTML = `
-                    <tr>
-                        <th></th>
-                        <th>Nome</th>
-                        <th>Preço</th>
-                        <th>Código de barras</th>
-                    </tr>
-                `;
+        theadElement.append(
+            createSortableHeader([
+                { text: "", sortable: false },
+                { text: "Nome", column: "name" },
+                { text: "Preço", column: "price" },
+                { text: "Código de barras", column: "barcode" },
+            ])
+        );
+
         items.forEach((item) => {
             const row = tbodyElement.insertRow();
             row.innerHTML = `
@@ -141,20 +139,21 @@ function createTableRows(items) {
                     `;
         });
     } else if (endpoint === "orders") {
-        theadElement.innerHTML = `
-                    <tr>
-                        <th></th>
-                        <th>Nº</th>
-                        <th>Cliente</th>
-                        <th>Produto</th>
-                        <th>Valor unit.</th>
-                        <th>Quantidade</th>
-                        <th>Desconto</th>
-                        <th>Valor total</th>
-                        <th>Data do pedido</th>
-                        <th>Status</th>
-                    </tr>
-                `;
+        theadElement.append(
+            createSortableHeader([
+                { text: "", sortable: false },
+                { text: "Nº", column: "id" },
+                { text: "Cliente", column: "client_name" },
+                { text: "Produto", column: "product_name" },
+                { text: "Valor unit.", column: "product_price" },
+                { text: "Quantidade", column: "quantity" },
+                { text: "Desconto", column: "discount" },
+                { text: "Valor total", column: "total" },
+                { text: "Data do pedido", column: "order_date" },
+                { text: "Status", column: "status" },
+            ])
+        );
+
         items.forEach((item) => {
             const productPrice = +item.product_price;
             const totalWithDiscount = productPrice * item.quantity;
@@ -202,6 +201,74 @@ function createTableRows(items) {
 
         if (selectedItems.includes(value) && !input.checked) input.click();
     });
+}
+
+function createSortableHeader(columns) {
+    const trElement = document.createElement("tr");
+
+    columns.forEach((col) => {
+        if (!col.sortable && col.sortable !== undefined) {
+            trElement.append(document.createElement("th"));
+
+            return;
+        } else {
+            const isCurrentColumn = queryParams.sortByColumn === col.column;
+            const currentSort = isCurrentColumn ? queryParams.sortByType : "";
+            const nextSort = getNextSortType(currentSort);
+
+            const sortIcon = getSortIcon(currentSort);
+            const buttonClass = isCurrentColumn ? "sort-active" : "";
+
+            const thElement = document.createElement("th");
+            const buttonElement = document.createElement("button");
+
+            buttonElement.classList.add("sort-btn");
+            if (!!buttonClass) buttonElement.classList.add(buttonClass);
+            buttonElement.textContent = `${col.text} ${sortIcon}`;
+
+            const callback = function () {
+                handleSort(col.column, nextSort);
+            };
+            buttonElement.addEventListener("click", callback);
+
+            thElement.append(buttonElement);
+
+            trElement.append(thElement);
+        }
+    });
+
+    return trElement;
+}
+
+function getNextSortType(currentSort) {
+    switch (currentSort) {
+        case "":
+            return "ASC";
+        case "ASC":
+            return "DESC";
+        case "DESC":
+            return "ASC";
+        default:
+            return "ASC";
+    }
+}
+
+function getSortIcon(sortType) {
+    switch (sortType) {
+        case "ASC":
+            return "▲";
+        case "DESC":
+            return "▼";
+        default:
+            return "↕";
+    }
+}
+
+function handleSort(column, sortType) {
+    queryParams.sortByColumn = column;
+    queryParams.sortByType = sortType;
+
+    getItems();
 }
 
 function createPagination(total, currentPage = 0) {
@@ -281,7 +348,7 @@ function createPrevAndNextButtons(totalPages, currentPage) {
 
 function handleItemsPerPageChange() {
     document.getElementById("limit-switch").addEventListener("change", (e) => {
-        resetQueryParams();
+        queryParams.offset = 0;
         queryParams.limit = +e.target.value;
 
         getItems();
