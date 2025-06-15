@@ -3,7 +3,7 @@
 @section('content')
     <x-navbar :current="'clients'"/>
     <div class="mx-5">
-        <form id="filter-form row">
+        <form id="filter-form">
             <div class="input-group col-md">
                 <x-input :type="'text'" :placeholder="'Buscar por nome, sobrenome, email ou CPF'" :id="'filter-by-value'"/>
             </div>
