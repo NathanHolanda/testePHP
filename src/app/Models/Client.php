@@ -6,6 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Client extends Model
 {
+    protected $fillable = [
+        "name",
+        "surname",
+        "email",
+        "cpf"
+    ];
+
+    public function getAll()
+    {
+        return $this->all();
+    }
+
     public function getByName(string $name)
     {
         return $this->where('name', 'like', "%{$name}%")->orWhere('surname', 'like', "%{$name}%")->first();

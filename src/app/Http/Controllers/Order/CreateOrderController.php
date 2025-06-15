@@ -25,6 +25,7 @@ class CreateOrderController extends Controller
                 'quantity' => 'required|integer|min:1',
                 'status' => ['required', 'regex:/^(pending|payed|canceled)$/'],
                 'order_date' => ['required', Rule::date()->format('Y-m-d')],
+                'discount' => 'nullable|regex:/^0\.\d{2}$/',
             ], [
                 'client_id.required' => 'ID do cliente obrigatório.',
                 'product_id.required' => 'ID do produto obrigatório.',
@@ -37,6 +38,7 @@ class CreateOrderController extends Controller
                 'status.regex' => 'Status inválido. Deve ser um dos seguintes: pending, payed, canceled.',
                 'order_date.required' => 'Data do pedido obrigatória.',
                 'order_date.date' => 'Data do pedido inválida.',
+                'discount.regex' => 'Desconto inválido.'
             ]);
         }catch(\Illuminate\Validation\ValidationException $e) {
             return response()->json(['error' => $e->errors()], Response::HTTP_BAD_REQUEST);

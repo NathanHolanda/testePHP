@@ -6,6 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
+    protected $fillable = [
+        "name",
+        "price",
+        "barcode",
+    ];
+
+    public function getAll()
+    {
+        return $this->all();
+    }
+
     public function getByName(string $name)
     {
         return $this->where('name', 'like', "%{$name}%")->first();

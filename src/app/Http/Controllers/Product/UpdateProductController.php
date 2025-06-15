@@ -23,12 +23,15 @@ class UpdateProductController extends Controller
             $request->validate([
                 'name' => 'string|max:100',
                 'price' => 'regex:/^\d+(\.\d{1,2})$/',
-                'barcode' => 'string|max:50|unique:products,barcode',
+                'barcode' => ['string','max:50',Rule::unique('products', 'barcode')->ignore($id)],
             ], [
+                'name.string' => 'Nome não pode ser vazio.',
                 'name.max' => 'Nome muito longo.',
+                'price.string' => 'Preço não pode ser vazio.',
                 'price.regex' => 'Preço deve ser um número decimal válido.',
+                'barcode.string' => 'Código de barras não pode ser vazio.',
                 'barcode.max' => 'Código de barras muito longo.',
-                'barcode.unique' => Rule::unique('products', 'barcode')->ignore($id)
+                'barcode.unique' =>  'Código de barras já cadastrado.'
             ]);
         }catch(\Illuminate\Validation\ValidationException $e) {
             return response()->json(['error' => $e->errors()], Response::HTTP_BAD_REQUEST);

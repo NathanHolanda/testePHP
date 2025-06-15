@@ -1,5 +1,6 @@
 import { toBRL } from "./utils/toBRL.js";
 import { toFormattedDate } from "./utils/toFormattedDate.js";
+import { toStringDate } from "./utils/toStringDate.js";
 import { toQueryParams } from "./utils/toQueryParams.js";
 
 import { rootApiUrl, endpointsMap } from "./variables.js";
@@ -24,6 +25,11 @@ const queryParams = {
 };
 
 let selectedItems = [];
+
+let selectedId = 0;
+
+const closeModalElement = document.getElementById("modal-close-btn");
+let form = document.getElementById("items-form");
 
 window.onload = () => {
     getItems();
@@ -59,6 +65,67 @@ window.onload = () => {
                 });
             }
         });
+
+    document
+        .getElementById("items-form-trigger")
+        .addEventListener("click", () => {
+            handleCleanForm();
+
+            const titleElement = document.getElementById("form-title");
+            titleElement.textContent = "Cadastrar ";
+
+            switch (endpoint) {
+                case "clients": {
+                    titleElement.textContent =
+                        titleElement.textContent + "cliente";
+
+                    break;
+                }
+                case "products": {
+                    titleElement.textContent =
+                        titleElement.textContent + "produto";
+
+                    break;
+                }
+                case "orders": {
+                    titleElement.textContent =
+                        titleElement.textContent + "pedido";
+
+                    break;
+                }
+            }
+
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+            });
+            handleSetSubmitEvent("POST");
+        });
+
+    if (endpoint === "orders") {
+        const clientSelectElement = document.getElementById("client_id");
+        const productSelectElement = document.getElementById("product_id");
+
+        fetch(rootApiUrl + "clients/all").then(async (response) => {
+            const data = await response.json();
+            data.forEach((item) => {
+                clientSelectElement.insertAdjacentHTML(
+                    "afterbegin",
+                    `<option value="${item.id}">${
+                        item.name + " " + item.surname
+                    }</option>`
+                );
+            });
+        });
+        fetch(rootApiUrl + "products/all").then(async (response) => {
+            const data = await response.json();
+            data.forEach((item) => {
+                productSelectElement.insertAdjacentHTML(
+                    "afterbegin",
+                    `<option value="${item.id}">${item.name}</option>`
+                );
+            });
+        });
+    }
 };
 
 function getItems() {
@@ -66,15 +133,19 @@ function getItems() {
 
     const queryParamsUrl = toQueryParams(queryParams);
 
-    fetch(rootApiUrl + endpoint + queryParamsUrl).then(async (response) => {
-        const data = await response.json();
+    fetch(rootApiUrl + endpoint + queryParamsUrl)
+        .then(async (response) => {
+            const data = await response.json();
 
-        const { total, items } = data;
+            const { total, items } = data;
 
-        createPagination(total, Math.floor(offset / limit));
+            if (total === 0) return alert("Nenhum item encontrado!");
 
-        createTableRows(items);
-    });
+            createPagination(total, Math.floor(offset / limit));
+
+            createTableRows(items);
+        })
+        .catch((e) => alert("Ops... Algo de errado ocorreu!"));
 }
 
 function createTableRows(items) {
@@ -113,6 +184,18 @@ function createTableRows(items) {
                             "$1.$2.$3-$4"
                         )}</td>
                     `;
+
+            row.style.cursor = "pointer";
+
+            Array.from(row.getElementsByTagName("td"))
+                .filter((_, i) => i !== 0)
+                .forEach((tdElem) => {
+                    tdElem.setAttribute("data-bs-target", "#form-modal");
+                    tdElem.setAttribute("data-bs-toggle", "modal");
+                    tdElem.addEventListener("click", () =>
+                        handleSetUpdateForm(item)
+                    );
+                });
         });
     } else if (endpoint === "products") {
         theadElement.append(
@@ -137,6 +220,18 @@ function createTableRows(items) {
                         }).format(+item.price)}</td>
                         <td>${item.barcode}</td>
                     `;
+
+            row.style.cursor = "pointer";
+
+            Array.from(row.getElementsByTagName("td"))
+                .filter((_, i) => i !== 0)
+                .forEach((tdElem) => {
+                    tdElem.setAttribute("data-bs-target", "#form-modal");
+                    tdElem.setAttribute("data-bs-toggle", "modal");
+                    tdElem.addEventListener("click", () =>
+                        handleSetUpdateForm(item)
+                    );
+                });
         });
     } else if (endpoint === "orders") {
         theadElement.append(
@@ -180,11 +275,25 @@ function createTableRows(items) {
                         <td>${formattedDate}</td>
                         <td>${orderStatusLabels[item.status]}</td>
                     `;
+
+            row.style.cursor = "pointer";
+
+            Array.from(row.getElementsByTagName("td"))
+                .filter((_, i) => i !== 0)
+                .forEach((tdElem) => {
+                    tdElem.setAttribute("data-bs-target", "#form-modal");
+                    tdElem.setAttribute("data-bs-toggle", "modal");
+                    tdElem.addEventListener("click", () =>
+                        handleSetUpdateForm(item)
+                    );
+                });
         });
     }
 
     Array.from(tbodyElement.getElementsByTagName("input")).forEach((input) => {
-        input.addEventListener("click", () => {
+        input.addEventListener("click", (e) => {
+            e.stopPropagation();
+
             const { value, checked } = input;
 
             if (checked) selectedItems.push(value);
@@ -379,12 +488,137 @@ function handleFilter() {
     });
 }
 
-// function resetQueryParams() {
-//     queryParams.offset = 0;
-//     queryParams.limit = 20;
-//     queryParams.sortByColumn = "id";
-//     queryParams.sortByType = "ASC";
-//     queryParams.filterByValue = "";
-//     queryParams.filterByDate = "";
-//     queryParams.filterByStatus = "";
-// }
+function handleCleanForm() {
+    switch (endpoint) {
+        case "clients": {
+            document.getElementById("name").value = "";
+            document.getElementById("surname").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("cpf").value = "";
+
+            return;
+        }
+        case "products": {
+            document.getElementById("name").value = "";
+            document.getElementById("price").value = "";
+            document.getElementById("barcode").value = "";
+
+            return;
+        }
+        case "orders": {
+            document.getElementById("client_id").value = "";
+            document.getElementById("product_id").value = "";
+            document.getElementById("quantity").value = "";
+            document.getElementById("status").value = "";
+            document.getElementById("order_date").value = "";
+            document.getElementById("discount").value = "";
+
+            return;
+        }
+    }
+}
+
+function handleSetUpdateForm(item) {
+    selectedId = item.id;
+
+    const titleElement = document.getElementById("form-title");
+    titleElement.textContent = "Editar ";
+
+    switch (endpoint) {
+        case "clients": {
+            titleElement.textContent = titleElement.textContent + "cliente";
+
+            document.getElementById("name").value = item.name;
+            document.getElementById("surname").value = item.surname;
+            document.getElementById("email").value = item.email;
+            document.getElementById("cpf").value = item.cpf;
+
+            break;
+        }
+        case "products": {
+            titleElement.textContent = titleElement.textContent + "produto";
+
+            document.getElementById("name").value = item.name;
+            document.getElementById("price").value = item.price.replace(
+                ".",
+                ","
+            );
+            document.getElementById("barcode").value = item.barcode;
+
+            break;
+        }
+        case "orders": {
+            titleElement.textContent = titleElement.textContent + "pedido";
+
+            document.getElementById("client_id").value = item.client_id;
+            document.getElementById("product_id").value = item.product_id;
+            document.getElementById("quantity").value = item.quantity;
+            document.getElementById("status").value = item.status;
+            document.getElementById("order_date").value = toStringDate(
+                item.order_date
+            );
+            document.getElementById("discount").value = (
+                item.discount * 100
+            ).toFixed(0);
+
+            break;
+        }
+    }
+
+    handleSetSubmitEvent("PUT");
+}
+
+function handleSetSubmitEvent(method) {
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        form = newForm;
+
+        const formData = new FormData(form);
+
+        const object = {};
+        formData.forEach(function (value, key) {
+            switch (key) {
+                case "price":
+                    object[key] = (+value.replace(",", ".")).toFixed(2);
+                    break;
+                case "discount":
+                    object[key] = (+value / 100).toFixed(2);
+                    break;
+                default:
+                    object[key] = value;
+                    break;
+            }
+        });
+        const json = JSON.stringify(object);
+
+        const endpointId = method === "PUT" ? "/" + selectedId : "";
+
+        fetch(rootApiUrl + endpoint + endpointId, {
+            method,
+            body: json,
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then(async (response) => {
+                const data = await response.json();
+
+                if (!!data.error) throw data.error;
+
+                if (method === "PUT") alert("Informações atualizadas!");
+                else alert("Cadastro realizado!");
+
+                getItems();
+
+                closeModalElement.click();
+            })
+            .catch((error) => {
+                const message = Object.values(error).join("\n");
+
+                alert(message);
+            });
+    });
+}

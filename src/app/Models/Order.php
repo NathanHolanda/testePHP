@@ -8,6 +8,15 @@ use App\Models\Product;
 
 class Order extends Model
 {
+    protected $fillable = [
+        "client_id",
+        "product_id",
+        "quantity",
+        "status",
+        "order_date",
+        "discount"
+    ];
+
     public function create(array $data)
     {
         $this->fill($data)->save();
@@ -16,6 +25,7 @@ class Order extends Model
 
     public function updateData(int $id, array $data)
     {
+        return [$id, $data];
         $this->where('id', $id)->update($data);
         return;
     }
