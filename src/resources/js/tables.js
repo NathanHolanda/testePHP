@@ -6,7 +6,7 @@ import { toQueryParams } from "./utils/toQueryParams.js";
 import { rootApiUrl, endpointsMap } from "./variables.js";
 
 const { pathname } = location;
-let endpoint = endpointsMap.get(pathname);
+let endpoint = endpointsMap.get(pathname.split("/")[1]);
 
 const orderStatusLabels = {
     pending: "Em aberto",
@@ -29,6 +29,7 @@ let selectedItems = [];
 let selectedId = 0;
 
 const closeModalElement = document.getElementById("modal-close-btn");
+const triggerModalElement = document.getElementById("items-form-trigger");
 let form = document.getElementById("items-form");
 
 window.onload = () => {
@@ -66,40 +67,35 @@ window.onload = () => {
             }
         });
 
-    document
-        .getElementById("items-form-trigger")
-        .addEventListener("click", () => {
-            handleCleanForm();
+    triggerModalElement.addEventListener("click", () => {
+        handleCleanForm();
 
-            const titleElement = document.getElementById("form-title");
-            titleElement.textContent = "Cadastrar ";
+        const titleElement = document.getElementById("form-title");
+        titleElement.textContent = "Cadastrar ";
 
-            switch (endpoint) {
-                case "clients": {
-                    titleElement.textContent =
-                        titleElement.textContent + "cliente";
+        switch (endpoint) {
+            case "clients": {
+                titleElement.textContent = titleElement.textContent + "cliente";
 
-                    break;
-                }
-                case "products": {
-                    titleElement.textContent =
-                        titleElement.textContent + "produto";
-
-                    break;
-                }
-                case "orders": {
-                    titleElement.textContent =
-                        titleElement.textContent + "pedido";
-
-                    break;
-                }
+                break;
             }
+            case "products": {
+                titleElement.textContent = titleElement.textContent + "produto";
 
-            form.addEventListener("submit", (e) => {
-                e.preventDefault();
-            });
-            handleSetSubmitEvent("POST");
+                break;
+            }
+            case "orders": {
+                titleElement.textContent = titleElement.textContent + "pedido";
+
+                break;
+            }
+        }
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
         });
+        handleSetSubmitEvent("POST");
+    });
 
     if (endpoint === "orders") {
         const clientSelectElement = document.getElementById("client_id");
@@ -125,6 +121,29 @@ window.onload = () => {
                 );
             });
         });
+    }
+
+    if (endpoint === "clients" || endpoint === "products") {
+        const id = pathname.split("/")[2];
+
+        if (id) {
+            fetch(rootApiUrl + endpoint + "/" + id).then(async (response) => {
+                const data = await response.json();
+
+                if (!!data) {
+                    const fakeUpdateBtn = document.createElement("button");
+                    fakeUpdateBtn.setAttribute("data-bs-target", "#form-modal");
+                    fakeUpdateBtn.setAttribute("data-bs-toggle", "modal");
+                    fakeUpdateBtn.style.display = "none";
+                    document.body.append(fakeUpdateBtn);
+
+                    fakeUpdateBtn.click();
+
+                    selectedId = data.id;
+                    handleSetUpdateForm(data);
+                }
+            });
+        }
     }
 };
 
@@ -278,9 +297,20 @@ function createTableRows(items) {
 
             row.style.cursor = "pointer";
 
+            const clientTdElem = row.getElementsByTagName("td")[2];
+            const productTdElem = row.getElementsByTagName("td")[3];
+
+            clientTdElem.addEventListener("click", () => {
+                window.location = "clientes/" + item.client_id;
+            });
+
+            productTdElem.addEventListener("click", () => {
+                window.location = "produtos/" + item.product_id;
+            });
+
             Array.from(row.getElementsByTagName("td"))
-                .filter((_, i) => i !== 0)
-                .forEach((tdElem) => {
+                .filter((_, i) => i !== 0 && i !== 2 && i !== 3)
+                .forEach((tdElem, i, arr) => {
                     tdElem.setAttribute("data-bs-target", "#form-modal");
                     tdElem.setAttribute("data-bs-toggle", "modal");
                     tdElem.addEventListener("click", () =>

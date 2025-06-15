@@ -13,6 +13,11 @@ class Client extends Model
         "cpf"
     ];
 
+    public function getById(string $id)
+    {
+        return $this->find($id)->first();
+    }
+
     public function getAll()
     {
         return $this->all();

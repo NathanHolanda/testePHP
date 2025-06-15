@@ -12,6 +12,11 @@ class Product extends Model
         "barcode",
     ];
 
+    public function getById(string $id)
+    {
+        return $this->find($id);
+    }
+
     public function getAll()
     {
         return $this->all();
