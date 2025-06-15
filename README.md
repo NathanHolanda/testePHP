@@ -1,4 +1,4 @@
-<h1>Como rodar a aplicação:</h1><br><br>
+<h1>Como rodar a aplicação:</h1>
 
 1. Para instalar as dependencias do PHP:<br>
 		`cd src && composer install && cd ..`<br><br>
