@@ -39,7 +39,7 @@
     </div>
   </div>
 </div>
-<button id="items-form-trigger" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#form-modal">Adicionar novo
+<button id="items-form-trigger" type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#form-modal">Adicionar novo
     @if($endpoint === 'clients'){{"cliente"}}
     @elseif($endpoint === 'products'){{"produto"}}
     @elseif($endpoint === 'orders'){{"pedido"}}

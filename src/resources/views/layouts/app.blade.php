@@ -25,7 +25,7 @@
                     <div class="d-flex justify-content-between">
                         <button class="btn btn-outline-danger mb-2" id="remove-selected-btn" disabled>Remover selecionados</button>
                         <div class="mb-2 d-flex align-items-center justify-content-end gap-2 ml-auto">
-                            <label for="limit-switch">Items por página:</label>
+                            <label for="limit-switch">Itens por página:</label>
                             <select class="form-select form-select-sm" id="limit-switch" style="width: 70px">
                                 <option value="5">5</option>
                                 <option value="10">10</option>
